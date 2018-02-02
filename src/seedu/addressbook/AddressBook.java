@@ -14,14 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 /*
  * NOTE : =============================================================
@@ -114,10 +107,6 @@ public class AddressBook {
     private static final String COMMAND_LIST_WORD = "list";
     private static final String COMMAND_LIST_DESC = "Displays all persons as a list with index numbers.";
     private static final String COMMAND_LIST_EXAMPLE = COMMAND_LIST_WORD;
-
-    private static final String COMMAND_SORT_WORD = "sort";
-    private static final String COMMAND_SORT_DESC = "Displays all persons in alphabetical order.";
-    private static final String COMMAND_SORT_EXAMPLE = COMMAND_SORT_WORD;
 
     private static final String COMMAND_DELETE_WORD = "delete";
     private static final String COMMAND_DELETE_DESC = "Deletes a person identified by the index number used in "
@@ -381,8 +370,6 @@ public class AddressBook {
             return executeListAllPersonsInAddressBook();
         case COMMAND_DELETE_WORD:
             return executeDeletePerson(commandArgs);
-        case COMMAND_SORT_WORD:
-            return executeSortAllPersonsInAddressBook();
         case COMMAND_CLEAR_WORD:
             return executeClearAddressBook();
         case COMMAND_HELP_WORD:
@@ -396,7 +383,7 @@ public class AddressBook {
 
     /**
      * Splits raw user input into command word and command arguments string
-     *
+ *
      * @return  size 2 array; first element is the command type and second element is the arguments string
      */
     private static String[] splitCommandWordAndArgs(String rawUserInput) {
@@ -491,7 +478,7 @@ public class AddressBook {
     private static ArrayList<String[]> getPersonsWithNameContainingAnyKeyword(Collection<String> keywords) {
         final ArrayList<String[]> matchedPersons = new ArrayList<>();
         for (String[] person : getAllPersonsInAddressBook()) {
-            final Set<String> wordsInName = new HashSet<>(splitByWhitespace(getNameFromPerson(person)));
+            final Set<String> wordsInName = new HashSet<>(splitByWhitespace(getNameFromPerson(person).toLowerCase()));
             if (!Collections.disjoint(wordsInName, keywords)) {
                 matchedPersons.add(person);
             }
@@ -583,16 +570,6 @@ public class AddressBook {
         ArrayList<String[]> toBeDisplayed = getAllPersonsInAddressBook();
         showToUser(toBeDisplayed);
         return getMessageForPersonsDisplayedSummary(toBeDisplayed);
-    }
-
-    private static String executeSortAllPersonsInAddressBook() {
-        ArrayList<String[]> toBeDisplayed = sort(getAllPersonsInAddressBook());
-        showToUser(toBeDisplayed);
-        return getMessageForPersonsDisplayedSummary(toBeDisplayed);
-    }
-
-    private static ArrayList<String[]> sort(ArrayList<String[]> persons) {
-        return persons;
     }
 
     /**
@@ -892,6 +869,16 @@ public class AddressBook {
         return person;
     }
 
+    private enum PersonProperty  {NAME, EMAIL, PHONE};
+
+    private HashMap<PersonProperty, String> makePerson(String name, String phone, String email){
+        HashMap<PersonProperty, String> curr = new HashMap<>();
+        curr.put(PersonProperty.NAME, name);
+        curr.put(PersonProperty.PHONE, phone);
+        curr.put(PersonProperty.EMAIL, email);
+
+        return curr;
+    }
     /**
      * Encodes a person into a decodable and readable string representation.
      *
@@ -1100,8 +1087,7 @@ public class AddressBook {
     private static String getUsageInfoForAllCommands() {
         return getUsageInfoForAddCommand() + LS
                 + getUsageInfoForFindCommand() + LS
-                + getUsageInfoForListCommand() + LS
-                + getUsageInfoForSortCommand() + LS
+                + getUsageInfoForViewCommand() + LS
                 + getUsageInfoForDeleteCommand() + LS
                 + getUsageInfoForClearCommand() + LS
                 + getUsageInfoForExitCommand() + LS
@@ -1136,14 +1122,9 @@ public class AddressBook {
     }
 
     /** Returns the string for showing 'view' command usage instruction */
-    private static String getUsageInfoForListCommand() {
+    private static String getUsageInfoForViewCommand() {
         return String.format(MESSAGE_COMMAND_HELP, COMMAND_LIST_WORD, COMMAND_LIST_DESC) + LS
                 + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_LIST_EXAMPLE) + LS;
-    }
-
-    private static String getUsageInfoForSortCommand() {
-        return String.format(MESSAGE_COMMAND_HELP, COMMAND_SORT_WORD, COMMAND_SORT_DESC) + LS
-                + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_SORT_EXAMPLE) + LS;
     }
 
     /** Returns string for showing 'help' command usage instruction */
