@@ -203,6 +203,11 @@ public class AddressBook {
         showWelcomeMessage();
         processProgramArgs(args);
         loadDataFromStorage();
+        mainLogic();
+        return;
+    }
+
+    private static void mainLogic() {
         while (true) {
             String userCommand = getUserInput();
             echoUserCommand(userCommand);
